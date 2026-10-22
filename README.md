@@ -52,7 +52,7 @@ Verify the installation:
 python -m pytest -q
 ```
 
-The test suite covers aggregate target construction, duplicate-reading detection, prediction output validation, and insufficient history.
+The test suite covers aggregate target construction, duplicate-reading detection, prediction output validation, insufficient history, and a command-line integration test.
 
 ## Dataset download
 
@@ -77,11 +77,31 @@ challenge_data/
 └── SHA256SUMS
 ```
 
-Verify the dataset before starting the assignment:
+Verify the dataset before starting the assignment. From the repository root, choose the command for your shell.
+
+#### Linux / macOS / Git Bash
 
 ```bash
 cd challenge_data
 sha256sum -c SHA256SUMS
+```
+
+#### Windows PowerShell
+
+```powershell
+Set-Location challenge_data
+foreach ($line in Get-Content .\SHA256SUMS) {
+    if ($line -notmatch '^([A-Fa-f0-9]{64})\s+\*?(.+)$') {
+        throw "Invalid checksum entry: $line"
+    }
+    $expectedHash = $Matches[1].ToLowerInvariant()
+    $fileName = $Matches[2]
+    $actualHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $fileName).Hash.ToLowerInvariant()
+    if ($actualHash -ne $expectedHash) {
+        throw "Checksum mismatch: $fileName"
+    }
+    Write-Output ("{0}: OK" -f $fileName)
+}
 ```
 
 You should see:
@@ -154,7 +174,7 @@ For the official challenge release, the output contains 24 predictions for the f
 python -m pytest -q
 ```
 
-The tests cover target construction, duplicate-reading detection, forecasting output validation, and insufficient history.
+The tests cover target construction, duplicate-reading detection, forecasting output validation, insufficient history, and a command-line integration test.
 
 ### Data limitation
 

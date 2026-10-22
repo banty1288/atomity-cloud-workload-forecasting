@@ -2,7 +2,7 @@
 import pandas as pd
 import pytest
 
-from cwfc.predict import build_targets, make_predictions
+from cwfc.predict import build_targets, main, make_predictions
 
 
 def make_cpu_data(n_timestamps=40, n_vms=3):
@@ -74,3 +74,37 @@ def test_make_predictions_rejects_too_little_history():
     with pytest.raises(ValueError, match="At least 27 timestamps are required"):
         make_predictions(cpu)
 
+def test_cli_writes_predictions_csv_without_index(tmp_path, monkeypatch):
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    cpu_path = data_dir / "vm_cpu_readings.csv.gz"
+    make_cpu_data().to_csv(cpu_path, index=False, compression="gzip")
+
+    output_path = tmp_path / "generated" / "predictions.csv"
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "cwfc.predict",
+            "--data",
+            str(data_dir),
+            "--output",
+            str(output_path),
+        ],
+    )
+
+    main()
+
+    assert output_path.exists()
+    saved = pd.read_csv(output_path)
+    assert list(saved.columns) == [
+        "timestamp",
+        "active_vm_count",
+        "aggregate_cpu_utilization",
+    ]
+    assert len(saved) == 24
+    assert saved["timestamp"].is_monotonic_increasing
+    assert saved["timestamp"].is_unique
+    assert "Unnamed: 0" not in saved.columns
+    values = saved[["active_vm_count", "aggregate_cpu_utilization"]].to_numpy(float)
+    assert np.isfinite(values).all()
+    assert saved["aggregate_cpu_utilization"].between(0, 100).all()
