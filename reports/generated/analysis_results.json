@@ -1,0 +1,228 @@
+{
+  "data_quality": {
+    "cpu_rows": 1340000,
+    "unique_vm_ids": 10000,
+    "unique_timestamps": 134,
+    "timestamp_min_seconds": 0,
+    "timestamp_max_seconds": 39900,
+    "timestamp_step_unique_values_seconds": [
+      300
+    ],
+    "timestamp_gap_count": 0,
+    "duplicate_vm_timestamp_pairs": 0,
+    "duplicate_full_rows": 0,
+    "cpu_missing_values": {
+      "timestamp": 0,
+      "vm_id": 0,
+      "min_cpu": 0,
+      "max_cpu": 0,
+      "avg_cpu": 0
+    },
+    "vm_observations_count_min": 134,
+    "vm_observations_count_max": 134,
+    "unique_vm_counts_per_timestamp": [
+      10000
+    ],
+    "vm_ids_match_metadata": true,
+    "metadata_rows": 10000,
+    "metadata_unique_vm_ids": 10000,
+    "metadata_missing_values": {
+      "vm_id": 0,
+      "subscription_id": 0,
+      "deployment_id": 0,
+      "timestamp_vm_created": 0,
+      "timestamp_vm_deleted": 0,
+      "max_cpu": 0,
+      "avg_cpu": 0,
+      "p95_max_cpu": 0,
+      "vm_category": 0,
+      "virtual_core_bucket": 0,
+      "memory_gb_bucket": 0
+    },
+    "metadata_deletions_at_or_before_last_observed_timestamp": 0,
+    "metadata_creation_timestamp_unique_values": 1,
+    "checksum_verification": {
+      "vm_cpu_readings.csv.gz": true,
+      "vm_metadata.csv.gz": true,
+      "DATA_CARD.md": true
+    }
+  },
+  "training_descriptive_statistics": {
+    "training_observations": 110,
+    "training_start_timestamp": 0,
+    "training_end_timestamp": 32700,
+    "cadence_seconds": 300,
+    "aggregate_cpu_mean_percent": 9.414089019539007,
+    "aggregate_cpu_std_percentage_points": 0.19356833547362817,
+    "aggregate_cpu_min_percent": 9.111633601754887,
+    "aggregate_cpu_max_percent": 9.912175173984913,
+    "aggregate_cpu_quantiles_percent": {
+      "0.05": 9.132356554829425,
+      "0.25": 9.288952109938585,
+      "0.5": 9.378120946203444,
+      "0.75": 9.507673290365222,
+      "0.95": 9.829146464857047
+    },
+    "aggregate_cpu_mean_absolute_step_percentage_points": 0.12111707563588979,
+    "aggregate_cpu_autocorrelation": {
+      "1": 0.6672358236125617,
+      "2": 0.6064871653592265,
+      "3": 0.6810152095902999,
+      "6": 0.47713596397929603,
+      "12": 0.3666123245758548,
+      "18": -0.0838197138980673,
+      "24": -0.026381275989692133
+    },
+    "vm_reading_avg_cpu_quantiles_percent": {
+      "0.05": 0.7762559912249593,
+      "0.25": 2.486945395240028,
+      "0.5": 5.119809152561594,
+      "0.75": 9.647973827501037,
+      "0.9": 19.691118594608653,
+      "0.95": 37.293248468366095,
+      "0.99": 87.40634736453232
+    },
+    "vm_reading_fraction_ge_70_percent": 0.015633636363636363,
+    "vm_reading_fraction_ge_90_percent": 0.008783636363636363,
+    "training_peak_timestamp_seconds": 16500,
+    "training_low_timestamp_seconds": 32400,
+    "active_vm_count_unique_training_values": [
+      10000
+    ],
+    "holdout_timestamps": [
+      33000,
+      33300,
+      33600,
+      33900,
+      34200,
+      34500,
+      34800,
+      35100,
+      35400,
+      35700,
+      36000,
+      36300,
+      36600,
+      36900,
+      37200,
+      37500,
+      37800,
+      38100,
+      38400,
+      38700,
+      39000,
+      39300,
+      39600,
+      39900
+    ]
+  },
+  "validation_metrics": [
+    {
+      "model": "autoregressive_1",
+      "mean_fold_MAE": 0.19675,
+      "mean_fold_RMSE": 0.236211,
+      "mean_fold_sMAPE_percent": 2.07523,
+      "mean_fold_bias": -0.019134,
+      "mean_peak_period_MAE": 0.306891,
+      "MAE_relative_to_persistence": 0.84572,
+      "MAE_improvement_vs_persistence_percent": 15.427952
+    },
+    {
+      "model": "training_mean",
+      "mean_fold_MAE": 0.201384,
+      "mean_fold_RMSE": 0.240866,
+      "mean_fold_sMAPE_percent": 2.124003,
+      "mean_fold_bias": -0.0277,
+      "mean_peak_period_MAE": 0.323491,
+      "MAE_relative_to_persistence": 0.865642,
+      "MAE_improvement_vs_persistence_percent": 13.435803
+    },
+    {
+      "model": "persistence",
+      "mean_fold_MAE": 0.232642,
+      "mean_fold_RMSE": 0.268082,
+      "mean_fold_sMAPE_percent": 2.44416,
+      "mean_fold_bias": 0.076795,
+      "mean_peak_period_MAE": 0.260894,
+      "MAE_relative_to_persistence": 1,
+      "MAE_improvement_vs_persistence_percent": 0
+    }
+  ],
+  "validation_by_horizon": [
+    {
+      "model": "autoregressive_1",
+      "horizon_steps": "1-6",
+      "mean_fold_MAE": 0.1379,
+      "mean_fold_RMSE": 0.1692,
+      "mean_fold_sMAPE_percent": 1.4559
+    },
+    {
+      "model": "autoregressive_1",
+      "horizon_steps": "7-12",
+      "mean_fold_MAE": 0.2025,
+      "mean_fold_RMSE": 0.2221,
+      "mean_fold_sMAPE_percent": 2.1281
+    },
+    {
+      "model": "autoregressive_1",
+      "horizon_steps": "13-18",
+      "mean_fold_MAE": 0.1969,
+      "mean_fold_RMSE": 0.2186,
+      "mean_fold_sMAPE_percent": 2.0833
+    },
+    {
+      "model": "autoregressive_1",
+      "horizon_steps": "19-24",
+      "mean_fold_MAE": 0.2497,
+      "mean_fold_RMSE": 0.2649,
+      "mean_fold_sMAPE_percent": 2.6336
+    }
+  ],
+  "validation_design": {
+    "fold_count": 5,
+    "origins_zero_based": [
+      36,
+      48,
+      60,
+      72,
+      84
+    ],
+    "validation_horizon": 24,
+    "initial_training_size": 36,
+    "step": 12,
+    "mean_fold_training_q75_peak_threshold": 9.518357575572221,
+    "ar1_absolute_error_p90_percentage_points": 0.41820585699080204,
+    "ar1_absolute_error_p95_percentage_points": 0.4602969017402745,
+    "ar1_peak_absolute_error_p90_percentage_points": 0.5025714291546475,
+    "absolute_error_count_with_overlap": 120,
+    "validation_windows_overlap": true
+  },
+  "selected_model": "autoregressive_1",
+  "official_holdout_actuals_used_for_model_selection_or_validation": false,
+  "forecast_timestamps": [
+    33000,
+    33300,
+    33600,
+    33900,
+    34200,
+    34500,
+    34800,
+    35100,
+    35400,
+    35700,
+    36000,
+    36300,
+    36600,
+    36900,
+    37200,
+    37500,
+    37800,
+    38100,
+    38400,
+    38700,
+    39000,
+    39300,
+    39600,
+    39900
+  ]
+}

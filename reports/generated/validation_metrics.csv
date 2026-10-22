@@ -1,0 +1,4 @@
+model,mean_fold_MAE,mean_fold_RMSE,mean_fold_sMAPE_percent,mean_fold_bias,mean_peak_period_MAE,MAE_relative_to_persistence,MAE_improvement_vs_persistence_percent
+autoregressive_1,0.196750,0.236211,2.075230,-0.019134,0.306891,0.845720,15.427952
+training_mean,0.201384,0.240866,2.124003,-0.027700,0.323491,0.865642,13.435803
+persistence,0.232642,0.268082,2.444160,0.076795,0.260894,1.000000,0.000000

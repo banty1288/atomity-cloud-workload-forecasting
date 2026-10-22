@@ -1,0 +1,15 @@
+dimension,segment,vm_count,observations_first_110,mean_reading_cpu_percent,median_reading_cpu_percent,p95_reading_cpu_percent,p95_vm_mean_cpu_percent
+vm_category,Delay-insensitive,6180,679800,8.257,5.160,25.940,25.664
+vm_category,Interactive,3091,340010,11.505,5.296,49.147,45.530
+vm_category,Unknown,729,80190,10.355,3.416,52.498,48.839
+virtual_core_bucket,2,7534,828740,9.764,5.521,39.209,34.663
+virtual_core_bucket,4,1908,209880,7.919,2.900,31.869,31.278
+virtual_core_bucket,8,486,53460,9.658,4.335,37.886,35.633
+virtual_core_bucket,24,62,6820,11.429,6.825,52.506,50.577
+virtual_core_bucket,>24,10,1100,6.619,2.611,24.334,18.861
+memory_gb_bucket,2,3904,429440,8.802,6.685,18.249,15.910
+memory_gb_bucket,4,2475,272250,11.460,4.433,58.774,48.693
+memory_gb_bucket,8,2146,236060,9.143,2.850,47.310,45.600
+memory_gb_bucket,32,1383,152130,7.814,2.677,29.509,27.243
+memory_gb_bucket,64,82,9020,11.217,4.348,50.479,47.144
+memory_gb_bucket,>64,10,1100,6.619,2.611,24.334,18.861

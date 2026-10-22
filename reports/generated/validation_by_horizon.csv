@@ -1,0 +1,13 @@
+model,horizon_steps,mean_fold_MAE,mean_fold_RMSE,mean_fold_sMAPE_percent
+autoregressive_1,1-6,0.1379,0.1692,1.4559
+autoregressive_1,13-18,0.1969,0.2186,2.0833
+autoregressive_1,19-24,0.2497,0.2649,2.6336
+autoregressive_1,7-12,0.2025,0.2221,2.1281
+persistence,1-6,0.1249,0.1568,1.3201
+persistence,13-18,0.2718,0.2900,2.8577
+persistence,19-24,0.3139,0.3263,3.2938
+persistence,7-12,0.2199,0.2359,2.3049
+training_mean,1-6,0.1607,0.1845,1.6961
+training_mean,13-18,0.1948,0.2167,2.0610
+training_mean,19-24,0.2461,0.2619,2.5959
+training_mean,7-12,0.2039,0.2234,2.1431
