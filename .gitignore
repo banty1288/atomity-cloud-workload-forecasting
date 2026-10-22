@@ -2,3 +2,6 @@
 .venv/
 .pytest_cache/
 __pycache__/
+# Local challenge data and downloaded release archive
+challenge_data/
+data-v1.tar.gz

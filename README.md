@@ -8,7 +8,7 @@ AI/ML take-home challenge built from the **Microsoft Azure Public Dataset V2** V
 2. Read [`DATASET.md`](DATASET.md).
 3. Download the **`data-v1` GitHub Release** dataset and extract it as `challenge_data/`.
 4. Read [`SUBMISSION.md`](SUBMISSION.md).
-5. Implement your analysis and forecasting pipeline.
+5. Run the forecasting pipeline using the command in the Forecasting and submission section.
 
 The challenge dataset is distributed as a versioned GitHub Release rather than committed to the repository. The `data-v1` release contains the fixed curated dataset used for this assignment.
 
@@ -52,7 +52,7 @@ Verify the installation:
 python -m pytest -q
 ```
 
-The repository includes a small test suite covering the starter forecasting utilities. Run it before beginning the assignment.
+The test suite covers aggregate target construction, duplicate-reading detection, prediction output validation, and insufficient history.
 
 ## Dataset download
 
@@ -127,3 +127,37 @@ The official V2 documentation describes a 30-day VM trace with five-minute CPU r
 ## Submission
 
 Submit your work as a repository or archive according to [`SUBMISSION.md`](SUBMISSION.md).
+
+## Forecasting and submission
+
+### Generate predictions
+
+After installing the project dependencies and extracting the challenge release into `challenge_data/`, run:
+
+```powershell
+python -m cwfc.predict --data challenge_data --output predictions.csv
+```
+
+The command constructs the aggregate targets from the CPU readings, evaluates candidate CPU forecasting methods using chronological validation on the training window, selects the method with the lowest mean validation MAE, and writes the predictions to `predictions.csv`.
+
+The output contains exactly these columns:
+
+- `timestamp`
+- `active_vm_count`
+- `aggregate_cpu_utilization`
+
+For the official challenge release, the output contains 24 predictions for the final 24 timestamps. The observed target values for that holdout are not used for model selection or fitting.
+
+### Run tests
+
+```powershell
+python -m pytest -q
+```
+
+The tests cover target construction, duplicate-reading detection, forecasting output validation, and insufficient history.
+
+### Data limitation
+
+In the supplied challenge release, every observed timestamp contains readings for all 10,000 VMs. Consequently, the derived `active_vm_count` target is constant throughout this dataset. Its forecast reflects this property of the supplied trace; it should not be interpreted as evidence that the model can predict VM arrivals or departures.
+
+The CPU forecasting model is selected using chronological validation on the training window. The reported validation MAE is not a score on the final 24 holdout observations.
