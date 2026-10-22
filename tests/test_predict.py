@@ -63,6 +63,10 @@ def test_make_predictions_returns_valid_small_dataset_output():
 
     assert np.isfinite(numeric).all()
     assert (predictions["active_vm_count"] >= 0).all()
+    assert np.equal(
+        predictions["active_vm_count"].to_numpy(float),
+        np.floor(predictions["active_vm_count"].to_numpy(float)),
+    ).all()
     assert predictions["aggregate_cpu_utilization"].between(0, 100).all()
     assert model in {"persistence", "training_mean", "autoregressive_1"}
     assert not summary.empty
@@ -104,6 +108,7 @@ def test_cli_writes_predictions_csv_without_index(tmp_path, monkeypatch):
     assert len(saved) == 24
     assert saved["timestamp"].is_monotonic_increasing
     assert saved["timestamp"].is_unique
+    assert np.issubdtype(saved["active_vm_count"].dtype, np.integer)
     assert "Unnamed: 0" not in saved.columns
     values = saved[["active_vm_count", "aggregate_cpu_utilization"]].to_numpy(float)
     assert np.isfinite(values).all()

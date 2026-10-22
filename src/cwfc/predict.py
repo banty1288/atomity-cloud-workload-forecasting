@@ -93,11 +93,20 @@ def _forecast(train: pd.DataFrame, template: pd.DataFrame, model: str,
 
 
 def select_cpu_model(train: pd.DataFrame) -> tuple[str, pd.DataFrame]:
-    """Choose a CPU model using expanding-window validation within train."""
+    """Select a CPU model using expanding-window validation within train.
+
+    For the official 110-point training window, the first fold uses 36
+    observations (three hours) and validates the next 24 (two hours). Fold
+    origins then advance by 12 observations. The formula adapts to smoke data.
+    """
     target = "aggregate_cpu_utilization"
     horizon = min(24, max(1, len(train) // 4))
-    initial_train_size = max(3, len(train) - 4 * horizon)
     step = max(1, horizon // 2)
+    initial_train_size = max(
+        3,
+        min(horizon + step, len(train) - horizon),
+        len(train) - 4 * horizon,
+    )
 
     origins = list(range(
         initial_train_size,
@@ -158,9 +167,11 @@ def make_predictions(cpu: pd.DataFrame) -> tuple[pd.DataFrame, str, pd.DataFrame
         train, holdout, model, "aggregate_cpu_utilization"
     )
 
+    # Counts should be emitted as integers; baseline helpers use floats for a
+    # shared forecast interface.
     predictions["active_vm_count"] = np.maximum(
-        0, predictions["active_vm_count"]
-    )
+        0, np.rint(predictions["active_vm_count"])
+    ).astype(int)
     predictions["aggregate_cpu_utilization"] = predictions[
         "aggregate_cpu_utilization"
     ].clip(0, 100)

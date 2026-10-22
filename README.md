@@ -43,7 +43,7 @@ Install the project and development dependencies:
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,analysis]"
 ```
 
 Verify the installation:
@@ -158,7 +158,7 @@ After installing the project dependencies and extracting the challenge release i
 python -m cwfc.predict --data challenge_data --output predictions.csv
 ```
 
-The command constructs the aggregate targets from the CPU readings, evaluates candidate CPU forecasting methods using chronological validation on the training window, selects the method with the lowest mean validation MAE, and writes the predictions to `predictions.csv`.
+The command constructs the aggregate targets from the CPU readings, evaluates candidate CPU forecasting methods using chronological expanding-window validation on the first 110 observations, selects the method with the lowest mean validation MAE, and writes the predictions to `predictions.csv`. For the official release, validation starts with 36 historical observations and uses five folds with a 24-observation horizon and 12-observation step. The final 24 observed CPU target values are excluded from fitting and model selection.
 
 The output contains exactly these columns:
 
@@ -175,6 +175,19 @@ python -m pytest -q
 ```
 
 The tests cover target construction, duplicate-reading detection, forecasting output validation, insufficient history, and a command-line integration test.
+
+The suite also validates the committed prediction artifact against the submission contract.
+
+### Reproduce workload analysis and report artifacts
+
+The analysis uses the first 110 observations for target statistics, segment comparisons, model validation, and diagnostic charts. It verifies the released data checksums and writes reproducible tables to `reports/generated/` and figures to `reports/figures/`.
+
+```powershell
+python analysis/analyze_workload.py --data challenge_data --output-dir reports/generated --figure-dir reports/figures
+```
+
+Read [`reports/final_report.md`](reports/final_report.md) for data quality, workload findings, model comparison, peak-period errors, operational recommendations, and limitations. Install the analysis extra as shown above to obtain Matplotlib for figures. The dataset itself is downloaded separately as required by the submission contract.
+
 
 ### Data limitation
 
