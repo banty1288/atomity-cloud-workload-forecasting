@@ -91,10 +91,10 @@ The table reports means of fold-level metrics. MAE and RMSE are in percentage po
 |---|---:|---:|---:|---:|---:|---:|
 | **AR(1), selected** | **0.1968** | **0.2362** | **2.075%** | -0.0191 | 0.3069 | **+15.43%** |
 | Training mean | 0.2014 | 0.2409 | 2.124% | -0.0277 | 0.3235 | +13.44% |
+| Ridge lags (alpha=1000) | 0.2045 | 0.2442 | 2.157% | -0.0224 | 0.3215 | +12.09% |
 | Persistence | 0.2326 | 0.2681 | 2.444% | +0.0768 | **0.2609** | 0.00% |
 | Moving average (6) | 0.2454 | 0.2901 | 2.577% | +0.0535 | 0.3090 | -5.47% |
 | Seasonal naive (12) | 0.2467 | 0.2894 | 2.590% | +0.0264 | 0.3247 | -6.06% |
-| Ridge lags (alpha=1000) | 0.2045 | 0.2442 | 2.157% | -0.0224 | 0.3215 | +12.09% |
 
 **Ridge bug check and alpha tuning (training data only).** The supervised alignment is causal: for target index `t`, features use `values[:t]` and the label is `values[t]`. Feature mean/scale and the centered-target mean are estimated from each fold's supervised training rows only. At forecast time, the recursive loop appends each prediction before computing the next step. No alignment, standardization, or recursive-append bug was found.
 

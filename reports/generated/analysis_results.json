@@ -102,6 +102,16 @@
       "MAE_improvement_vs_persistence_percent": 13.435802773794592
     },
     {
+      "model": "ridge_lags",
+      "mean_fold_MAE": 0.20450531687345985,
+      "mean_fold_RMSE": 0.24418047141601243,
+      "mean_fold_sMAPE_percent": 2.1569496685782648,
+      "mean_fold_bias": -0.022423291337560963,
+      "mean_peak_period_MAE": 0.3214683699373864,
+      "MAE_relative_to_persistence": 0.879057746180573,
+      "MAE_improvement_vs_persistence_percent": 12.094225381942703
+    },
+    {
       "model": "persistence",
       "mean_fold_MAE": 0.23264150479535287,
       "mean_fold_RMSE": 0.2680822076792717,
@@ -130,16 +140,6 @@
       "mean_peak_period_MAE": 0.3246762288452118,
       "MAE_relative_to_persistence": 1.0605943902658859,
       "MAE_improvement_vs_persistence_percent": -6.059439026588587
-    },
-    {
-      "model": "ridge_lags",
-      "mean_fold_MAE": 0.20450531687345985,
-      "mean_fold_RMSE": 0.24418047141601243,
-      "mean_fold_sMAPE_percent": 2.1569496685782648,
-      "mean_fold_bias": -0.022423291337560963,
-      "mean_peak_period_MAE": 0.3214683699373864,
-      "MAE_relative_to_persistence": 0.879057746180573,
-      "MAE_improvement_vs_persistence_percent": 12.094225381942703
     }
   ],
   "validation_by_horizon": [
