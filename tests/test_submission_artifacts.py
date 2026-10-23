@@ -27,3 +27,13 @@ def test_committed_predictions_csv_matches_submission_contract():
     assert (counts >= 0).all()
     assert np.equal(counts, np.floor(counts)).all()
     assert ((cpu >= 0) & (cpu <= 100)).all()
+
+
+def test_prediction_interval_artifact_matches_forecast_horizon():
+    path = ROOT / "reports/generated/prediction_intervals.csv"
+    assert path.exists(), "Run analysis/analyze_workload.py to generate intervals"
+    intervals = pd.read_csv(path)
+    assert len(intervals) == 24
+    assert intervals["timestamp"].tolist() == list(range(33000, 39901, 300))
+    assert (intervals["interval_lower"] <= intervals["point_forecast"]).all()
+    assert (intervals["point_forecast"] <= intervals["interval_upper"]).all()

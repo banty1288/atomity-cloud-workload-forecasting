@@ -2,7 +2,10 @@
 import pandas as pd
 import pytest
 
-from cwfc.predict import build_targets, main, make_predictions
+from cwfc.predict import (
+    CANDIDATE_MODELS, _forecast, build_targets, evaluate_candidates,
+    main, make_predictions, select_cpu_model, summarize_validation,
+)
 
 
 def make_cpu_data(n_timestamps=40, n_vms=3):
@@ -113,3 +116,41 @@ def test_cli_writes_predictions_csv_without_index(tmp_path, monkeypatch):
     values = saved[["active_vm_count", "aggregate_cpu_utilization"]].to_numpy(float)
     assert np.isfinite(values).all()
     assert saved["aggregate_cpu_utilization"].between(0, 100).all()
+
+
+def test_each_candidate_returns_finite_forecast_of_right_length():
+    targets = build_targets(make_cpu_data(n_timestamps=64))
+    train, future = targets.iloc[:40].reset_index(drop=True), targets.iloc[40:64].reset_index(drop=True)
+    for model in CANDIDATE_MODELS:
+        pred = _forecast(train, future, model, "aggregate_cpu_utilization")
+        assert len(pred) == len(future)
+        assert np.isfinite(pred).all(), model
+
+
+def test_ridge_forecast_does_not_depend_on_future_target_values():
+    targets = build_targets(make_cpu_data(n_timestamps=64))
+    train = targets.iloc[:40].reset_index(drop=True)
+    future_a = targets.iloc[40:64].reset_index(drop=True).copy()
+    future_b = future_a.copy()
+    future_b["aggregate_cpu_utilization"] = np.linspace(0, 100, len(future_b))
+    future_b["active_vm_count"] = np.arange(len(future_b)) + 12345
+    a = _forecast(train, future_a, "ridge_lags", "aggregate_cpu_utilization")
+    b = _forecast(train, future_b, "ridge_lags", "aggregate_cpu_utilization")
+    np.testing.assert_allclose(a, b, rtol=0, atol=0)
+
+
+def test_seasonal_naive_falls_back_to_persistence_for_short_history():
+    targets = build_targets(make_cpu_data(n_timestamps=32))
+    train, future = targets.iloc[:10].reset_index(drop=True), targets.iloc[10:18].reset_index(drop=True)
+    pred = _forecast(train, future, "seasonal_naive", "aggregate_cpu_utilization")
+    assert np.allclose(pred, train.aggregate_cpu_utilization.iloc[-1])
+
+
+def test_evaluation_uses_required_official_origins_and_all_candidates():
+    targets = build_targets(make_cpu_data(n_timestamps=134))
+    train = targets.iloc[:110].reset_index(drop=True)
+    evaluation = evaluate_candidates(train)
+    assert sorted(evaluation.origin_index.unique().tolist()) == [36, 48, 60, 72, 84]
+    assert set(evaluation.model.unique()) == set(CANDIDATE_MODELS)
+    summary, _, _ = summarize_validation(evaluation)
+    assert summary.iloc[0].model == select_cpu_model(train)[0]
