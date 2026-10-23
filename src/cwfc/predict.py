@@ -159,7 +159,12 @@ def evaluate_candidates(train: pd.DataFrame, target: str = CPU_TARGET,
     step = max(1, horizon // 2) if step is None else int(step)
     if horizon <= 0 or step <= 0:
         raise ValueError("horizon and step must be positive")
-    initial = max(3, min(horizon + step, len(train) - horizon), len(train) - 4 * horizon)
+    # Official challenge window: 110 training points, 24-step horizon,
+    # 12-step fold stride -> origins 36, 48, 60, 72, 84.
+    # For smaller smoke datasets, adapt the first origin while retaining
+    # chronological, expanding-window validation within the provided data.
+    initial = min(36, len(train) - horizon)
+    initial = max(3, initial)
     origins = list(range(initial, len(train) - horizon + 1, step))
     if not origins:
         raise ValueError("Insufficient observations for expanding-window validation")
