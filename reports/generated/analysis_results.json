@@ -333,27 +333,5 @@
       "pooled_validation_points": 30,
       "p90_abs_error_percentage_points": 0.4569545847599997
     }
-  ],
-  "ridge_alpha_selection": {
-    "alpha_grid": [
-      0.1,
-      1,
-      10,
-      100,
-      1000
-    ],
-    "selected_alpha": 1000,
-    "selection_metric": "mean_fold_MAE",
-    "tuning_observations": 110,
-    "fold_origins": [
-      36,
-      48,
-      60,
-      72,
-      84
-    ],
-    "fold_horizon": 24,
-    "fold_step": 12,
-    "final_24_targets_used": false
-  }
+  ]
 }
