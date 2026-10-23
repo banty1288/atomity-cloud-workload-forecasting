@@ -1,196 +1,84 @@
 # Cloud Workload Forecasting Challenge
 
-AI/ML take-home challenge built from the **Microsoft Azure Public Dataset V2** VM trace.
+AI/ML take-home using the fixed data-v1 release, a curated subset of the Microsoft Azure Public Dataset V2 VM trace.
 
-## Start here
+## Setup
 
-1. Read [`ASSIGNMENT.md`](ASSIGNMENT.md).
-2. Read [`DATASET.md`](DATASET.md).
-3. Download the **`data-v1` GitHub Release** dataset and extract it as `challenge_data/`.
-4. Read [`SUBMISSION.md`](SUBMISSION.md).
-5. Run the forecasting pipeline using the command in the Forecasting and submission section.
+Python 3.11 or newer is required. From the repository root:
 
-The challenge dataset is distributed as a versioned GitHub Release rather than committed to the repository. The `data-v1` release contains the fixed curated dataset used for this assignment.
-
-## Environment setup
-
-Python **3.11 or newer** is required.
-
-Create a virtual environment:
-
-### Linux / macOS
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-### Windows PowerShell
-
-```powershell
+~~~powershell
 py -m venv .venv
 .venv\Scripts\Activate.ps1
-```
-
-### Windows Command Prompt
-
-```cmd
-py -m venv .venv
-.venv\Scripts\activate.bat
-```
-
-Install the project and development dependencies:
-
-```bash
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev,analysis]"
-```
+~~~
 
-Verify the installation:
+The core forecasting pipeline depends only on NumPy and pandas. The optional analysis extra installs Matplotlib; the dev extra installs pytest.
 
-```bash
-python -m pytest -q
-```
+## Dataset
 
-The test suite covers aggregate target construction, duplicate-reading detection, prediction output validation, insufficient history, and a command-line integration test.
+Download data-v1.tar.gz from the [official challenge release](https://github.com/atomityhq/forecasting-challenge/releases/tag/data-v1) and extract it into a local challenge_data folder:
 
-## Dataset download
-
-The hiring dataset is distributed as the fixed `data-v1` release of this repository.
-
-**Download:** [Azure Dataset v1 Release](https://github.com/atomityhq/forecasting-challenge/releases/tag/data-v1)
-
-Download `data-v1.tar.gz` from the release and extract it into the repository as `challenge_data/`:
-
-```bash
-mkdir -p challenge_data
+~~~powershell
+New-Item -ItemType Directory -Force challenge_data
 tar -xzf data-v1.tar.gz -C challenge_data
-```
+~~~
 
-The resulting layout is:
+The folder should contain vm_cpu_readings.csv.gz, vm_metadata.csv.gz, DATA_CARD.md, and SHA256SUMS. Dataset files are excluded from Git. Verify checksums from PowerShell:
 
-```text
-challenge_data/
-├── vm_cpu_readings.csv.gz
-├── vm_metadata.csv.gz
-├── DATA_CARD.md
-└── SHA256SUMS
-```
-
-Verify the dataset before starting the assignment. From the repository root, choose the command for your shell.
-
-#### Linux / macOS / Git Bash
-
-```bash
-cd challenge_data
-sha256sum -c SHA256SUMS
-```
-
-#### Windows PowerShell
-
-```powershell
+~~~powershell
 Set-Location challenge_data
 foreach ($line in Get-Content .\SHA256SUMS) {
-    if ($line -notmatch '^([A-Fa-f0-9]{64})\s+\*?(.+)$') {
-        throw "Invalid checksum entry: $line"
-    }
-    $expectedHash = $Matches[1].ToLowerInvariant()
-    $fileName = $Matches[2]
-    $actualHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $fileName).Hash.ToLowerInvariant()
-    if ($actualHash -ne $expectedHash) {
-        throw "Checksum mismatch: $fileName"
-    }
-    Write-Output ("{0}: OK" -f $fileName)
+    if ($line -notmatch '^([A-Fa-f0-9]{64})\s+\*?(.+)$') { throw "Invalid checksum entry: $line" }
+    $expected = $Matches[1].ToLowerInvariant()
+    $file = $Matches[2]
+    $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath $file).Hash.ToLowerInvariant()
+    if ($actual -ne $expected) { throw "Checksum mismatch: $file" }
+    Write-Output ("{0}: OK" -f $file)
 }
-```
+Set-Location ..
+~~~
 
-You should see:
+## Forecasting task and method
 
-```text
-vm_cpu_readings.csv.gz: OK
-vm_metadata.csv.gz: OK
-DATA_CARD.md: OK
-```
+The release contains 10,000 VM traces, each with 134 five-minute observations. The pipeline aggregates raw readings into active_vm_count (distinct VMs represented) and aggregate_cpu_utilization (mean VM-level avg_cpu). The first 110 aggregate observations are used for model selection; the final 24 timestamps are the two-hour forecast horizon.
 
-The release is a real, curated subset of the Microsoft Azure Public Dataset V2. It is not synthetic data.
+Six candidates are evaluated using the same expanding-window validation loop: persistence, training mean, AR(1), seasonal naive (12-point/one-hour season), moving average (last six points), and Ridge regression using a NumPy closed-form solution on lags 1, 2, 3, 6, 12 plus the previous-six-point mean. The official fold origins are 36, 48, 60, 72, 84; each validation horizon is 24 and the step is 12. Selection is by mean fold MAE. The final 24 target values are never used for fitting, feature selection, tuning, or model selection.
 
-The dataset contains 10,000 VMs with 134 CPU measurements per VM at five-minute intervals, for a total of 1,340,000 CPU observations.
+## Generate predictions
 
-Use the exact `data-v1` release provided for this assignment. Do not substitute another dataset or a different version of the Azure Public Dataset.
+After installing the package and extracting the fixed release, run this CLI unchanged:
 
-## What you are solving
-
-The underlying data contains anonymized VM workload telemetry sampled every five minutes. Your job is to understand the workload and build a defensible forecasting pipeline for near-term aggregate demand.
-
-The challenge is intentionally open-ended. We evaluate reasoning, time-series methodology, leakage prevention, error analysis, reproducibility, and the quality of your operational conclusions—not just model complexity.
-
-## Expected environment
-
-Python 3.11+ is recommended.
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e '.[dev]'
-pytest -q
-```
-
-Model dependencies are intentionally not prescribed. Add only what you need and document them.
-
-## Source
-
-Microsoft Azure Public Dataset V2:
-https://github.com/Azure/AzurePublicDataset
-
-The official V2 documentation describes a 30-day VM trace with five-minute CPU readings, VM metadata, and encrypted subscription/deployment/VM identifiers. The full upstream trace is much larger than this challenge release.
-
-## Submission
-
-Submit your work as a repository or archive according to [`SUBMISSION.md`](SUBMISSION.md).
-
-## Forecasting and submission
-
-### Generate predictions
-
-After installing the project dependencies and extracting the challenge release into `challenge_data/`, run:
-
-```powershell
+~~~powershell
 python -m cwfc.predict --data challenge_data --output predictions.csv
-```
+~~~
 
-The command constructs the aggregate targets from the CPU readings, evaluates candidate CPU forecasting methods using chronological expanding-window validation on the first 110 observations, selects the method with the lowest mean validation MAE, and writes the predictions to `predictions.csv`. For the official release, validation starts with 36 historical observations and uses five folds with a 24-observation horizon and 12-observation step. The final 24 observed CPU target values are excluded from fitting and model selection.
+The output remains exactly 24 rows with columns timestamp, active_vm_count, aggregate_cpu_utilization, chronological holdout timestamps, finite numeric values, integer non-negative VM counts, and no index column.
 
-The output contains exactly these columns:
+## Reproduce analysis, error bands, and report artifacts
 
-- `timestamp`
-- `active_vm_count`
-- `aggregate_cpu_utilization`
+Run the prediction command first, then:
 
-For the official challenge release, the output contains 24 predictions for the final 24 timestamps. The observed target values for that holdout are not used for model selection or fitting.
+~~~powershell
+python analysis/analyze_workload.py --data challenge_data --output-dir reports/generated --figure-dir reports/figures --predictions predictions.csv
+~~~
 
-### Run tests
+The analysis uses shared validation functions from cwfc.predict and regenerates candidate metrics, fold metrics, horizon-bucket metrics, segment summaries, peak/low periods, JSON diagnostics, figures, and reports/generated/prediction_intervals.csv. That separate 24-row file gives each point forecast a horizon-bucket empirical P90 absolute-error band; it does not change predictions.csv.
 
-```powershell
+The short, executed [EDA notebook](notebooks/01_eda.ipynb) covers data-quality checks, aggregate CPU series and ACF, VM-level distribution, segment comparisons, peak/low periods, validation scores, and empirical error bands. The report is [reports/final_report.md](reports/final_report.md).
+
+## Tests
+
+~~~powershell
 python -m pytest -q
-```
+~~~
 
-The tests cover target construction, duplicate-reading detection, forecasting output validation, insufficient history, and a command-line integration test.
+Tests cover target construction and validation, all six candidates, Ridge future-value isolation, the seasonal-naive fallback, the CLI smoke dataset, and the committed prediction/interval contracts.
 
-The suite also validates the committed prediction artifact against the submission contract.
+## Important limitations
 
-### Reproduce workload analysis and report artifacts
+All 10,000 VMs appear at every timestamp in this curated release, so active_vm_count is constant. This sample does not demonstrate VM-churn forecasting. Validation metrics are not scores on the final 24-point holdout. AR(1) wins on mean fold MAE but can lose to persistence on the selected peak-period subset. P90 bands are descriptive estimates from five overlapping validation folds, not calibrated prediction guarantees. Longer traces and infrastructure-specific backtesting are required before operational automation.
 
-The analysis uses the first 110 observations for target statistics, segment comparisons, model validation, and diagnostic charts. It verifies the released data checksums and writes reproducible tables to `reports/generated/` and figures to `reports/figures/`.
+## Assignment documents
 
-```powershell
-python analysis/analyze_workload.py --data challenge_data --output-dir reports/generated --figure-dir reports/figures
-```
-
-Read [`reports/final_report.md`](reports/final_report.md) for data quality, workload findings, model comparison, peak-period errors, operational recommendations, and limitations. Install the analysis extra as shown above to obtain Matplotlib for figures. The dataset itself is downloaded separately as required by the submission contract.
-
-
-### Data limitation
-
-In the supplied challenge release, every observed timestamp contains readings for all 10,000 VMs. Consequently, the derived `active_vm_count` target is constant throughout this dataset. Its forecast reflects this property of the supplied trace; it should not be interpreted as evidence that the model can predict VM arrivals or departures.
-
-The CPU forecasting model is selected using chronological validation on the training window. The reported validation MAE is not a score on the final 24 holdout observations.
+Start with [ASSIGNMENT.md](ASSIGNMENT.md), [DATASET.md](DATASET.md), and [SUBMISSION.md](SUBMISSION.md). They define the task, schema, holdout rule, and exact output contract.
