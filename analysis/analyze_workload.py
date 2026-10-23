@@ -254,7 +254,7 @@ def main() -> None:
     parser.add_argument("--predictions", type=Path, default=Path("predictions.csv"))
     args = parser.parse_args()
     result = run_analysis(args.data, args.output_dir, args.figure_dir, args.predictions)
-    print(f"Verified {len(result['data_quality']['release_checksums_verified'])} release checksums.")
+    print(f"Verified {len(result['data_quality_first_110_only']['release_checksums_verified'])} release checksums.")
     print(f"Selected model: {result['selected_cpu_model']}")
     print(pd.DataFrame(result["validation_metrics"]).to_string(index=False))
 
