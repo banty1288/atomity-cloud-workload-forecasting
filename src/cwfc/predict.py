@@ -17,8 +17,9 @@ SEASON_LENGTH = 12
 MOVING_AVERAGE_WINDOW = 6
 RIDGE_LAGS = (1, 2, 3, 6, 12)
 RIDGE_ROLLING_WINDOW = 6
-# Selected by mean fold MAE on only the first 110 observations using origins
-# 36, 48, 60, 72, 84 and a 24-step horizon. The final 24 targets were not used.
+# Selected from alpha grid {0.1, 1, 10, 100, 1000} by mean fold MAE on only the
+# first 110 observations, using origins 36, 48, 60, 72, 84 and horizon 24.
+# The final 24 target observations were not used for alpha selection.
 RIDGE_ALPHA = 1000.0
 CANDIDATE_MODELS = (
     "persistence", "training_mean", "autoregressive_1",
