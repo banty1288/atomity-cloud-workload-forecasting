@@ -71,7 +71,7 @@ def test_make_predictions_returns_valid_small_dataset_output():
         np.floor(predictions["active_vm_count"].to_numpy(float)),
     ).all()
     assert predictions["aggregate_cpu_utilization"].between(0, 100).all()
-    assert model in {"persistence", "training_mean", "autoregressive_1"}
+    assert model in set(CANDIDATE_MODELS)
     assert not summary.empty
 
 
