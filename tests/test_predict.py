@@ -127,7 +127,7 @@ def test_each_candidate_returns_finite_forecast_of_right_length():
         assert np.isfinite(pred).all(), model
 
 
-def test_ridge_forecast_does_not_depend_on_future_target_values():
+def test_ridge_forecast_is_finite_sized_and_ignores_future_targets():
     targets = build_targets(make_cpu_data(n_timestamps=64))
     train = targets.iloc[:40].reset_index(drop=True)
     future_a = targets.iloc[40:64].reset_index(drop=True).copy()
@@ -136,6 +136,9 @@ def test_ridge_forecast_does_not_depend_on_future_target_values():
     future_b["active_vm_count"] = np.arange(len(future_b)) + 12345
     a = _forecast(train, future_a, "ridge_lags", "aggregate_cpu_utilization")
     b = _forecast(train, future_b, "ridge_lags", "aggregate_cpu_utilization")
+    assert len(a) == len(future_a) == 24
+    assert np.isfinite(a).all()
+    assert np.isfinite(b).all()
     np.testing.assert_allclose(a, b, rtol=0, atol=0)
 
 

@@ -17,7 +17,9 @@ SEASON_LENGTH = 12
 MOVING_AVERAGE_WINDOW = 6
 RIDGE_LAGS = (1, 2, 3, 6, 12)
 RIDGE_ROLLING_WINDOW = 6
-RIDGE_ALPHA = 1.0
+# Selected by mean fold MAE on only the first 110 observations using origins
+# 36, 48, 60, 72, 84 and a 24-step horizon. The final 24 targets were not used.
+RIDGE_ALPHA = 1000.0
 CANDIDATE_MODELS = (
     "persistence", "training_mean", "autoregressive_1",
     "seasonal_naive", "moving_average", "ridge_lags",

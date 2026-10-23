@@ -6,7 +6,7 @@
 
 This submission builds a reproducible pipeline for two aggregate targets from the curated Microsoft Azure Public Dataset V2 VM trace: distinct VM count and mean VM-level average CPU utilization. The release has 1,340,000 CPU readings from 10,000 VMs over 134 five-minute timestamps. Data checks show regular cadence, complete traces, no duplicate VM/timestamp pairs, no missing CPU fields in the training window, and matching CPU/metadata VM IDs.
 
-The first 110 aggregate observations are used for model selection and validation; the final 24 timestamps are the two-hour forecast horizon. Six candidates are evaluated on the same five expanding-window folds. AR(1) is selected by mean fold MAE (0.1968 percentage points), about 15.4% lower than persistence (0.2326). Ridge lags perform much worse on this short series, demonstrating why model choice remains metric-driven. These are rolling-validation results, **not** accuracy measured on the final holdout.
+The first 110 aggregate observations are used for model selection and validation; the final 24 timestamps are the two-hour forecast horizon. Six candidates are evaluated on the same five expanding-window folds. AR(1) is selected by mean fold MAE (0.1968 percentage points), about 15.4% lower than persistence (0.2326). A training-window-only Ridge alpha grid improves its mean fold MAE from 0.5723 at alpha 1 to 0.2045 at alpha 1000, but AR(1) still wins at 0.1968. These are rolling-validation results, **not** accuracy measured on the final holdout.
 
 Aggregate CPU is smooth relative to the spread of VM-level readings. AR(1) has the lowest overall MAE, while persistence has lower error on the selected peak-period subset. The operational recommendation is to use the forecast as a refreshed planning signal with horizon-specific empirical P90 error bands and per-VM/segment monitoring—not as a standalone autoscaling controller.
 
@@ -75,7 +75,7 @@ The six candidates are persistence, training mean, AR(1), seasonal naive, moving
 - **AR(1)** fits the relationship between consecutive historical values and recursively predicts future steps.
 - **Seasonal naive** repeats the last 12 observed values (one hour), falling back to persistence when the history is shorter than 12 points.
 - **Moving average** repeats the mean of the last six observed values.
-- **Ridge lags** uses NumPy's closed-form Ridge solution on lags 1, 2, 3, 6, and 12 plus the rolling mean of the prior six points. Each supervised feature uses observations strictly earlier than its target. For recursive multi-step forecasting, earlier predictions are fed into subsequent features; no actual future value is read.
+- **Ridge lags** uses NumPy's closed-form Ridge solution on lags 1, 2, 3, 6, and 12 plus the rolling mean of the prior six points. Each supervised feature uses observations strictly earlier than its target. For recursive multi-step forecasting, earlier predictions are fed into subsequent features; no actual future value is read. Its alpha was tuned over `{0.1, 1, 10, 100, 1000}` using mean fold MAE on the first 110 points only and the prescribed folds; the final 24 targets were not used.
 
 All candidates use the same validation loop. The core pipeline has only NumPy and pandas dependencies; Matplotlib is isolated in the analysis extra.
 
@@ -94,9 +94,23 @@ The table reports means of fold-level metrics. MAE and RMSE are in percentage po
 | Persistence | 0.2326 | 0.2681 | 2.444% | +0.0768 | **0.2609** | 0.00% |
 | Moving average (6) | 0.2454 | 0.2901 | 2.577% | +0.0535 | 0.3090 | -5.47% |
 | Seasonal naive (12) | 0.2467 | 0.2894 | 2.590% | +0.0264 | 0.3247 | -6.06% |
-| Ridge lags | 0.5723 | 0.7247 | 5.522% | +0.3745 | 0.5196 | -146.01% |
+| Ridge lags (alpha=1000) | 0.2045 | 0.2442 | 2.157% | -0.0224 | 0.3215 | +12.09% |
 
-AR(1) improves mean fold MAE by approximately **15.4%** and RMSE by **11.9%** compared with persistence. Its MAE gain over training mean is modest, around 2.3%. Ridge lags perform much worse on this short, smooth series. That is a useful result: added model complexity does not guarantee better forecasts.
+**Ridge bug check and alpha tuning (training data only).** The supervised alignment is causal: for target index `t`, features use `values[:t]` and the label is `values[t]`. Feature mean/scale and the centered-target mean are estimated from each fold's supervised training rows only. At forecast time, the recursive loop appends each prediction before computing the next step. No alignment, standardization, or recursive-append bug was found.
+
+The large low-alpha errors point to overfitting/unstable coefficients on a small sample: the first 36-point fold has only 24 supervised rows for six correlated features. The table shows Ridge mean fold MAE for each alpha in the grid, using only the first 110 aggregate points with origins 36, 48, 60, 72, 84, horizon 24 and step 12.
+
+| Ridge alpha | Fold 1 MAE | Fold 2 MAE | Fold 3 MAE | Fold 4 MAE | Fold 5 MAE | Mean fold MAE |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0.1 | 0.1788 | 0.3355 | 1.8586 | 0.4134 | 0.1332 | 0.5839 |
+| 1 | 0.1748 | 0.3332 | 1.8125 | 0.4068 | 0.1344 | 0.5723 |
+| 10 | 0.1614 | 0.3199 | 1.1453 | 0.3572 | 0.1435 | 0.4254 |
+| 100 | 0.1605 | 0.3060 | 0.1550 | 0.2285 | 0.1749 | 0.2049 |
+| **1000 (chosen)** | **0.1623** | **0.3039** | **0.1811** | **0.1759** | **0.1995** | **0.2045** |
+
+Alpha 1000 has the lowest mean fold MAE in this grid, narrowly ahead of alpha 100. The chosen-alpha per-fold Ridge MAEs are **0.1623, 0.3039, 0.1811, 0.1759, 0.1995**. Tuned Ridge (0.2045) is still slightly worse than AR(1) (0.1968), so AR(1) remains selected; there is no attempt to force a Ridge win.
+
+AR(1) improves mean fold MAE by approximately **15.4%** and RMSE by **11.9%** compared with persistence. Its MAE gain over training mean is modest, around 2.3%.
 
 ### 3.4 Horizon and peak errors
 
@@ -134,7 +148,7 @@ python analysis/analyze_workload.py --data challenge_data --output-dir reports/g
 
 The short, executed [EDA notebook](../notebooks/01_eda.ipynb) covers training-window quality checks, aggregate CPU and ACF, VM-level distribution, segment comparisons, peak/low periods, candidate scores, and P90 error bands. The analysis imports the shared validation/evaluation functions from cwfc.predict.
 
-**Conclusion.** AR(1) remains selected because it has the lowest mean fold MAE among the six candidates on the required folds. Ridge, moving average, and seasonal naive lose to simpler alternatives on this release. Constant VM count, the VM-level upper tail, a short dataset, overlapping validation folds, and worse AR(1) peak error limit operational claims. Reported scores are validation—not final holdout accuracy.
+**Conclusion.** AR(1) remains selected because it has the lowest mean fold MAE among the six candidates on the required folds. Ridge alpha was selected from `{0.1, 1, 10, 100, 1000}` using only the first 110 points and prescribed folds; alpha 1000 improves Ridge considerably, but its mean fold MAE (0.2045) still trails AR(1) (0.1968). Ridge remains a candidate, not a forced winner. Constant VM count, the VM-level upper tail, overlapping validation folds, and worse AR(1) peak error limit operational claims. Reported scores are validation—not final holdout accuracy.
 
 ## References
 

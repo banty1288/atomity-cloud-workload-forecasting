@@ -133,13 +133,13 @@
     },
     {
       "model": "ridge_lags",
-      "mean_fold_MAE": 0.5723279039023154,
-      "mean_fold_RMSE": 0.7247163188801238,
-      "mean_fold_sMAPE_percent": 5.521779022682809,
-      "mean_fold_bias": 0.3744904209272192,
-      "mean_peak_period_MAE": 0.5195692966818832,
-      "MAE_relative_to_persistence": 2.4601281031335036,
-      "MAE_improvement_vs_persistence_percent": -146.01281031335037
+      "mean_fold_MAE": 0.20450531687345985,
+      "mean_fold_RMSE": 0.24418047141601243,
+      "mean_fold_sMAPE_percent": 2.1569496685782648,
+      "mean_fold_bias": -0.022423291337560963,
+      "mean_peak_period_MAE": 0.3214683699373864,
+      "MAE_relative_to_persistence": 0.879057746180573,
+      "MAE_improvement_vs_persistence_percent": 12.094225381942703
     }
   ],
   "validation_by_horizon": [
@@ -167,9 +167,9 @@
     {
       "model": "ridge_lags",
       "horizon_bucket": "1-6",
-      "mean_fold_MAE": 0.13507109970009992,
-      "mean_fold_RMSE": 0.1592228421342789,
-      "mean_fold_sMAPE_percent": 1.4198416584453408
+      "mean_fold_MAE": 0.1537673548816631,
+      "mean_fold_RMSE": 0.18067210228557778,
+      "mean_fold_sMAPE_percent": 1.6226630441964178
     },
     {
       "model": "seasonal_naive",
@@ -209,9 +209,9 @@
     {
       "model": "ridge_lags",
       "horizon_bucket": "7-12",
-      "mean_fold_MAE": 0.385526624968472,
-      "mean_fold_RMSE": 0.40910907537535135,
-      "mean_fold_sMAPE_percent": 3.9315538123629623
+      "mean_fold_MAE": 0.20602223890200114,
+      "mean_fold_RMSE": 0.22564772665579458,
+      "mean_fold_sMAPE_percent": 2.165050371208292
     },
     {
       "model": "seasonal_naive",
@@ -251,9 +251,9 @@
     {
       "model": "ridge_lags",
       "horizon_bucket": "13-18",
-      "mean_fold_MAE": 0.6488382011766116,
-      "mean_fold_RMSE": 0.6731732240558591,
-      "mean_fold_sMAPE_percent": 6.396785138454722
+      "mean_fold_MAE": 0.20200390812406588,
+      "mean_fold_RMSE": 0.22345379077190963,
+      "mean_fold_sMAPE_percent": 2.1372802558498942
     },
     {
       "model": "seasonal_naive",
@@ -293,9 +293,9 @@
     {
       "model": "ridge_lags",
       "horizon_bucket": "19-24",
-      "mean_fold_MAE": 1.1198756897640778,
-      "mean_fold_RMSE": 1.1428521093025779,
-      "mean_fold_sMAPE_percent": 10.338935481468216
+      "mean_fold_MAE": 0.25622776558610927,
+      "mean_fold_RMSE": 0.271070666005313,
+      "mean_fold_sMAPE_percent": 2.7028050030584536
     },
     {
       "model": "seasonal_naive",
@@ -333,5 +333,27 @@
       "pooled_validation_points": 30,
       "p90_abs_error_percentage_points": 0.4569545847599997
     }
-  ]
+  ],
+  "ridge_alpha_selection": {
+    "alpha_grid": [
+      0.1,
+      1,
+      10,
+      100,
+      1000
+    ],
+    "selected_alpha": 1000,
+    "selection_metric": "mean_fold_MAE",
+    "tuning_observations": 110,
+    "fold_origins": [
+      36,
+      48,
+      60,
+      72,
+      84
+    ],
+    "fold_horizon": 24,
+    "fold_step": 12,
+    "final_24_targets_used": false
+  }
 }
